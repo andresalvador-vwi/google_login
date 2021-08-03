@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googlelogin/Page/home_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({ Key? key }) : super(key: key);
@@ -25,13 +26,66 @@ class _LoginPageState extends State<LoginPage> {
       GoogleSignInAccount? _currentUser = await _googleSignIn.signIn();
       //Variavel que pega o ID_token e o Token de acesso
       GoogleSignInAuthentication authentication = await _currentUser!.authentication;
-      validarToken(authentication.idToken!);
+      await validarTokenBackend(authentication.idToken!);
       Navigator.of(context).push(
-        MaterialPageRoute(builder: (_)=> UserPage(_currentUser))
+        MaterialPageRoute(builder: (_)=> UserPage(
+          user: _currentUser,
+          googleSignIn: _googleSignIn,
+        ))
       );
     } catch (error) {
       print('caiu aqui');
+
       print(error);
+    }
+  }
+
+  Future<void> validarTokenBackend(String idtoken) async {
+    try {
+      final FormData data = FormData.fromMap({
+        'id_token': idtoken,
+      });
+      Response response = await Dio().post(dotenv.env['API_URL']!, data: data);
+      print("##########################");
+      print("Autenticado com sucesso com o backend");
+      print(response.data);
+      print("##########################");
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Autenticado com sucesso com o backend"),
+          actions: [
+            TextButton(
+              child: Text("Ok"),
+              onPressed: () => Navigator.of(context).pop(),
+            )
+          ],
+        ),
+      );
+    } catch (e) {
+      String message = "$e";
+      if (e is DioError && e.response != null) {
+        message = "Resposta da API: ${e.response!.data}";
+        if (e.response!.data is Map && e.response!.data['message'] != null) {
+          message = "Resposta da API: ${e.response!.data['message']}";
+        }
+      }
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Erro ao validar sessão com o backend"),
+          content: Text("$message"),
+          actions: [
+            TextButton(
+              child: Text("Ok"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        ),
+      );
+      print(e);
     }
   }
 
