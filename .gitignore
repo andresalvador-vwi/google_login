@@ -8,6 +8,8 @@
 .buildlog/
 .history
 .svn/
+android/app/google-services.json
+.env
 
 # IntelliJ related
 *.iml
@@ -29,6 +31,7 @@
 .packages
 .pub-cache/
 .pub/
+.gradle/
 /build/
 
 # Web related

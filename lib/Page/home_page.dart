@@ -3,7 +3,11 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class UserPage extends StatefulWidget {
   final GoogleSignInAccount user;
-  const UserPage(this.user);
+  final GoogleSignIn googleSignIn;
+  const UserPage({
+    required this.user,
+    required this.googleSignIn,
+  });
 
   @override
   _UserPageState createState() => _UserPageState();
@@ -24,6 +28,13 @@ class _UserPageState extends State<UserPage> {
             subtitle: Text(widget.user.id),
           ),
           const Text("Signed in successfully."),
+          ElevatedButton(
+            child: Text("Logout"),
+            onPressed: () async {
+              await widget.googleSignIn.signOut();
+              Navigator.of(context).pop();
+            },
+          ),
         ],
       ),
     );
